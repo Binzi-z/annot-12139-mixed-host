@@ -1,0 +1,20 @@
+{
+  "events": [
+    {
+      "kind": "privilege_escalation",
+      "user": "deploy",
+      "evidence": "普通账号 sudo 起 shell 后立刻以 root 登录"
+    },
+    {
+      "kind": "dns_tunnel",
+      "ip": "10.20.1.51",
+      "evidence": "12 条超长子域查询指向同一外部域"
+    },
+    {
+      "kind": "webshell",
+      "ip": "10.20.1.51",
+      "evidence": "upload then cmd= execution under /uploads/"
+    }
+  ],
+  "note": "benign look-alikes are intentionally unlabelled"
+}
