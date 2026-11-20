@@ -1,0 +1,42 @@
+{
+  "note": "可配置的 sanitizer 白名单：这些函数/方法的返回值视为已净化。",
+  "sanitizers": [
+    {
+      "name": "shlex.quote",
+      "kind": "function"
+    },
+    {
+      "name": "lib.sanitizers.quote",
+      "kind": "function"
+    },
+    {
+      "name": "os.path.basename",
+      "kind": "function"
+    },
+    {
+      "name": "lib.sanitizers.base_name",
+      "kind": "function"
+    },
+    {
+      "name": "lib.sanitizers.allow_enum",
+      "kind": "function"
+    },
+    {
+      "name": "int",
+      "kind": "builtin"
+    }
+  ],
+  "shell_wrappers": [
+    "lib.shellwrap.run_shell",
+    "lib.shellwrap.run",
+    "lib.cmdutil.critical_run"
+  ],
+  "safe_wrappers": [
+    "lib.shellwrap.run_argv",
+    "lib.cmdutil.safe_run"
+  ],
+  "template_renderers": [
+    "lib.templating.render_cmd",
+    "lib.templating.render_inline"
+  ]
+}

@@ -1,0 +1,787 @@
+{
+  "topic": "12139",
+  "note": "50 条命令注入链路：源为 Flask 路由参数 / Celery 任务参数 / 环境变量，落点覆盖 subprocess/os.system 的字符串拼接、参数列表误用、shell 包装函数、模板渲染出的命令；传播跨模块并穿过装饰器与闭包。良性注入点（常量命令、argv 列表、shlex.quote/basename/allow_enum 净化后）一律不算。finding 的 file/line 指向污点实际到达的执行调用行。",
+  "total": 50,
+  "vulns": [
+    {
+      "id": "C01",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_arg",
+      "entry": "request.args['host']",
+      "file": "services/gateway/diag.py",
+      "line": 25,
+      "path": [
+        "request.args['host']",
+        "cmd",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "query 参数 host 拼进命令行后 subprocess.run(shell=True)"
+    },
+    {
+      "id": "C02",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_arg",
+      "entry": "request.args['name']",
+      "file": "services/gateway/diag.py",
+      "line": 33,
+      "path": [
+        "request.args['name']",
+        "cmd",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "query 参数 name 拼进 dig 命令并 shell=True"
+    },
+    {
+      "id": "C03",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_form",
+      "entry": "request.form['img']",
+      "file": "services/gateway/diag.py",
+      "line": 39,
+      "path": [
+        "request.form['img']",
+        "os.system"
+      ],
+      "evidence": "表单字段 img 直接进 os.system"
+    },
+    {
+      "id": "C04",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_arg",
+      "entry": "request.args['host']",
+      "file": "services/gateway/diag.py",
+      "line": 48,
+      "path": [
+        "request.args['host']",
+        "cmd",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "traceroute 目标来自 query 参数，shell=True"
+    },
+    {
+      "id": "C05",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "shell_wrapper",
+      "source": "flask_json",
+      "entry": "request.json['svc']",
+      "file": "services/gateway/diag.py",
+      "line": 55,
+      "path": [
+        "request.json['svc']",
+        "shellwrap.run_shell",
+        "subprocess.call(shell=True)"
+      ],
+      "evidence": "JSON 字段经 shellwrap.run_shell 进 subprocess.call(shell=True)"
+    },
+    {
+      "id": "C06",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_form",
+      "entry": "request.form['src']",
+      "file": "services/gateway/diag.py",
+      "line": 61,
+      "path": [
+        "request.form['src']",
+        "os.system"
+      ],
+      "evidence": "表单 src 拼进 mogrify 命令"
+    },
+    {
+      "id": "C07",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "flask_arg",
+      "entry": "request.args['key']",
+      "file": "services/gateway/diag.py",
+      "line": 69,
+      "path": [
+        "request.args['key']",
+        "templating.render_cmd",
+        "shellwrap.run"
+      ],
+      "evidence": "模板 rotate.sh.j2 用 key 渲染后交给 shellwrap.run"
+    },
+    {
+      "id": "C08",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "arglist_misuse",
+      "source": "flask_form",
+      "entry": "request.form['tool']",
+      "file": "services/gateway/diag.py",
+      "line": 75,
+      "path": [
+        "request.form['tool']",
+        "subprocess.run(argv)"
+      ],
+      "evidence": "表单字段被当成 argv[0] 直接执行"
+    },
+    {
+      "id": "C09",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_arg",
+      "entry": "request.args['target']",
+      "file": "services/gateway/ops.py",
+      "line": 20,
+      "path": [
+        "request.args['target']",
+        "cmd",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "备份目标目录来自 query 参数，shell=True"
+    },
+    {
+      "id": "C10",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "flask_arg",
+      "entry": "request.args['env']",
+      "file": "services/gateway/ops.py",
+      "line": 27,
+      "path": [
+        "request.args['env']",
+        "templating.render_cmd",
+        "shellwrap.run"
+      ],
+      "evidence": "部署模板 deploy.sh.j2 用 env 渲染出命令后执行"
+    },
+    {
+      "id": "C11",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "flask_arg",
+      "entry": "request.args['version']",
+      "file": "services/gateway/ops.py",
+      "line": 34,
+      "path": [
+        "request.args['version']",
+        "templating.render_cmd",
+        "shellwrap.run"
+      ],
+      "evidence": "回滚版本号进模板渲染出的命令"
+    },
+    {
+      "id": "C12",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "arglist_misuse",
+      "source": "flask_form",
+      "entry": "request.form['command']",
+      "file": "services/gateway/ops.py",
+      "line": 40,
+      "path": [
+        "request.form['command']",
+        "subprocess.run(argv)"
+      ],
+      "evidence": "任意程序名作为 argv[0] 执行（参数列表误用）"
+    },
+    {
+      "id": "C13",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_arg",
+      "entry": "request.args['pattern']",
+      "file": "services/gateway/ops.py",
+      "line": 48,
+      "path": [
+        "request.args['pattern']",
+        "cmd",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "清理表达式来自 query 参数并拼进 find 命令"
+    },
+    {
+      "id": "C14",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "shell_wrapper",
+      "source": "flask_json",
+      "entry": "request.json['url']",
+      "file": "services/gateway/ops.py",
+      "line": 55,
+      "path": [
+        "request.json['url']",
+        "shellwrap.run_shell",
+        "subprocess.call(shell=True)"
+      ],
+      "evidence": "健康检查 URL 经 shellwrap.run_shell 执行，可注入 ; 命令"
+    },
+    {
+      "id": "C15",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "flask_arg",
+      "entry": "request.args['db']",
+      "file": "services/gateway/ops.py",
+      "line": 62,
+      "path": [
+        "request.args['db']",
+        "templating.render_cmd",
+        "shellwrap.run"
+      ],
+      "evidence": "migrate.sh.j2 用 db 参数渲染后执行"
+    },
+    {
+      "id": "C16",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_form",
+      "entry": "request.form['fmt']",
+      "file": "services/gateway/users.py",
+      "line": 20,
+      "path": [
+        "request.form['fmt']",
+        "os.system"
+      ],
+      "evidence": "导出格式来自表单，直接拼进 pg_dump 命令"
+    },
+    {
+      "id": "C17",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "shell_wrapper",
+      "source": "flask_json",
+      "entry": "request.json['role']",
+      "file": "services/gateway/users.py",
+      "line": 28,
+      "path": [
+        "request.json['role']",
+        "shellwrap.run_shell",
+        "subprocess.call(shell=True)"
+      ],
+      "evidence": "授权角色名经 shellwrap.run_shell 进入 shell"
+    },
+    {
+      "id": "C18",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "closure",
+      "source": "flask_arg",
+      "entry": "request.args['email']",
+      "file": "services/gateway/users.py",
+      "line": 34,
+      "path": [
+        "request.args['email']",
+        "closure _inner",
+        "os.system"
+      ],
+      "evidence": "query 参数被闭包 _inner 捕获后进 os.system"
+    },
+    {
+      "id": "C19",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_form",
+      "entry": "request.form['file']",
+      "file": "services/gateway/users.py",
+      "line": 42,
+      "path": [
+        "request.form['file']",
+        "os.system"
+      ],
+      "evidence": "头像文件名拼进 cp 命令"
+    },
+    {
+      "id": "C20",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_arg",
+      "entry": "request.args['q']",
+      "file": "services/gateway/users.py",
+      "line": 51,
+      "path": [
+        "request.args['q']",
+        "cmd",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "搜索词拼进 grep 命令，shell=True"
+    },
+    {
+      "id": "C21",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "celery_arg",
+      "entry": "task arg path",
+      "file": "services/jobs/tasks_maintenance.py",
+      "line": 13,
+      "path": [
+        "task arg path",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "Celery 任务参数 path 拼进 logrotate 命令，shell=True"
+    },
+    {
+      "id": "C22",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "arglist_misuse",
+      "source": "celery_arg",
+      "entry": "task arg volume",
+      "file": "services/jobs/tasks_maintenance.py",
+      "line": 18,
+      "path": [
+        "task arg volume",
+        "subprocess.run(['/bin/sh','-c',...])"
+      ],
+      "evidence": "任务参数拼进 /bin/sh -c 的字符串（参数列表误用）"
+    },
+    {
+      "id": "C23",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "celery_arg",
+      "entry": "task arg table",
+      "file": "services/jobs/tasks_maintenance.py",
+      "line": 23,
+      "path": [
+        "task arg table",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "表名来自任务参数并拼进 psql 命令"
+    },
+    {
+      "id": "C24",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "celery_arg",
+      "entry": "task arg index",
+      "file": "services/jobs/tasks_maintenance.py",
+      "line": 28,
+      "path": [
+        "task arg index",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "索引名来自任务参数并拼进 curl 命令"
+    },
+    {
+      "id": "C25",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "arglist_misuse",
+      "source": "celery_arg",
+      "entry": "task arg shard",
+      "file": "services/jobs/tasks_maintenance.py",
+      "line": 33,
+      "path": [
+        "task arg shard",
+        "subprocess.run(['/bin/sh','-c',...])"
+      ],
+      "evidence": "分片名拼进 sh -c 字符串"
+    },
+    {
+      "id": "C26",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "celery_arg",
+      "entry": "task arg volume",
+      "file": "services/jobs/tasks_maintenance.py",
+      "line": 38,
+      "path": [
+        "task arg volume",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "卷名来自任务参数并拼进 lvcreate 命令"
+    },
+    {
+      "id": "C27",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "celery_arg",
+      "entry": "task arg tenant",
+      "file": "services/jobs/tasks_sync.py",
+      "line": 18,
+      "path": [
+        "task arg tenant",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "租户 ID 来自任务参数并拼进 rsync 命令"
+    },
+    {
+      "id": "C28",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "celery_arg",
+      "entry": "task arg remote",
+      "file": "services/jobs/tasks_sync.py",
+      "line": 23,
+      "path": [
+        "task arg remote",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "远端地址来自任务参数并拼进 git fetch"
+    },
+    {
+      "id": "C29",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "class_attr",
+      "source": "flask_form",
+      "entry": "request.form['source']",
+      "file": "services/jobs/tasks_sync.py",
+      "line": 31,
+      "path": [
+        "request.form['source']",
+        "SyncJob.cmd",
+        "shellwrap.run_shell"
+      ],
+      "evidence": "表单字段存进实例属性 self.cmd，run() 时进 shell"
+    },
+    {
+      "id": "C30",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "celery_arg",
+      "entry": "task arg prefix",
+      "file": "services/jobs/tasks_sync.py",
+      "line": 41,
+      "path": [
+        "task arg prefix",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "前缀来自任务参数并拼进 find -delete 命令"
+    },
+    {
+      "id": "C31",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "class_attr",
+      "source": "flask_form",
+      "entry": "request.form['remote']",
+      "file": "services/jobs/tasks_sync.py",
+      "line": 49,
+      "path": [
+        "request.form['remote']",
+        "MirrorJob.cmd",
+        "shellwrap.run_shell"
+      ],
+      "evidence": "远端地址存进实例属性后经 shellwrap.run_shell 执行"
+    },
+    {
+      "id": "C32",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_arg",
+      "entry": "request.args['service']",
+      "file": "services/admin/console.py",
+      "line": 21,
+      "path": [
+        "request.args['service']",
+        "cmd",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "服务名来自 query 参数并拼进 systemctl"
+    },
+    {
+      "id": "C33",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_form",
+      "entry": "request.form['endpoint']",
+      "file": "services/admin/console.py",
+      "line": 27,
+      "path": [
+        "request.form['endpoint']",
+        "os.system"
+      ],
+      "evidence": "探测地址来自表单并进 os.system"
+    },
+    {
+      "id": "C34",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "shell_wrapper",
+      "source": "flask_arg",
+      "entry": "request.args['cmd']",
+      "file": "services/admin/console.py",
+      "line": 34,
+      "path": [
+        "request.args['cmd']",
+        "cmdutil.critical_run",
+        "subprocess.check_output(shell=True)"
+      ],
+      "evidence": "query 参数经 cmdutil.critical_run 进 check_output(shell=True)"
+    },
+    {
+      "id": "C35",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "flask_arg",
+      "entry": "request.args['app']",
+      "file": "services/admin/console.py",
+      "line": 42,
+      "path": [
+        "request.args['app']",
+        "cmd",
+        "subprocess.run(shell=True)"
+      ],
+      "evidence": "应用名来自 query 参数并拼进 systemctl restart"
+    },
+    {
+      "id": "C36",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "shell_wrapper",
+      "source": "flask_arg",
+      "entry": "request.args['cmd']",
+      "file": "services/admin/console.py",
+      "line": 48,
+      "path": [
+        "request.args['cmd']",
+        "cmdutil.critical_run",
+        "subprocess.check_output(shell=True)"
+      ],
+      "evidence": "query 参数经 cmdutil.critical_run 执行 redis-cli 子命令"
+    },
+    {
+      "id": "C37",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "shell_wrapper",
+      "source": "flask_json",
+      "entry": "request.json['pid']",
+      "file": "services/admin/console.py",
+      "line": 55,
+      "path": [
+        "request.json['pid']",
+        "shellwrap.run_shell",
+        "subprocess.call(shell=True)"
+      ],
+      "evidence": "pid 来自 JSON 并经 shellwrap.run_shell 进 shell"
+    },
+    {
+      "id": "C38",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "flask_arg",
+      "entry": "request.args['replicas']",
+      "file": "services/admin/console.py",
+      "line": 62,
+      "path": [
+        "request.args['replicas']",
+        "templating.render_cmd",
+        "shellwrap.run"
+      ],
+      "evidence": "副本数经 scale.sh.j2 渲染出命令后执行"
+    },
+    {
+      "id": "C39",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "env_var",
+      "entry": "APP_MIGRATE_ARGS",
+      "file": "services/cli/entry.py",
+      "line": 16,
+      "path": [
+        "os.environ['APP_MIGRATE_ARGS']",
+        "os.popen"
+      ],
+      "evidence": "环境变量拼进 os.popen 的 manage.py 命令"
+    },
+    {
+      "id": "C40",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "env_var",
+      "entry": "APP_COLLECT_ARGS",
+      "file": "services/cli/entry.py",
+      "line": 22,
+      "path": [
+        "os.environ['APP_COLLECT_ARGS']",
+        "os.popen"
+      ],
+      "evidence": "环境变量拼进 collectstatic 命令"
+    },
+    {
+      "id": "C41",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "env_var",
+      "entry": "APP_TARGET",
+      "file": "services/cli/entry.py",
+      "line": 28,
+      "path": [
+        "os.environ['APP_TARGET']",
+        "templating.render_inline",
+        "os.system"
+      ],
+      "evidence": "APP_TARGET 经 render_inline 渲染后进 os.system"
+    },
+    {
+      "id": "C42",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "concat_shell",
+      "source": "env_var",
+      "entry": "APP_PURGE_ARGS",
+      "file": "services/cli/entry.py",
+      "line": 34,
+      "path": [
+        "os.environ['APP_PURGE_ARGS']",
+        "os.popen"
+      ],
+      "evidence": "环境变量拼进 purge 命令并 os.popen 执行"
+    },
+    {
+      "id": "C43",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "flask_arg",
+      "entry": "request.args['name']",
+      "file": "services/reports/render.py",
+      "line": 19,
+      "path": [
+        "request.args['name']",
+        "templating.render_cmd",
+        "shellwrap.run"
+      ],
+      "evidence": "报表名经 report.sh.j2 渲染成命令后执行"
+    },
+    {
+      "id": "C44",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "env_var",
+      "entry": "APP_TARGET",
+      "file": "services/reports/render.py",
+      "line": 25,
+      "path": [
+        "os.environ['APP_TARGET']",
+        "templating.render_inline",
+        "os.system"
+      ],
+      "evidence": "环境变量 APP_TARGET 经模板渲染进 os.system"
+    },
+    {
+      "id": "C45",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "flask_arg",
+      "entry": "request.args['to']",
+      "file": "services/reports/render.py",
+      "line": 32,
+      "path": [
+        "request.args['to']",
+        "templating.render_cmd",
+        "shellwrap.run"
+      ],
+      "evidence": "收件人经 mail.sh.j2 渲染出 mail 命令后执行"
+    },
+    {
+      "id": "C46",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "env_var",
+      "entry": "APP_TARGET",
+      "file": "services/reports/render.py",
+      "line": 38,
+      "path": [
+        "os.environ['APP_TARGET']",
+        "templating.render_inline",
+        "os.system"
+      ],
+      "evidence": "归档路径来自环境变量并经 render_inline 进 os.system"
+    },
+    {
+      "id": "C47",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "template_rendered",
+      "source": "flask_arg",
+      "entry": "request.args['channel']",
+      "file": "services/reports/render.py",
+      "line": 45,
+      "path": [
+        "request.args['channel']",
+        "templating.render_cmd",
+        "shellwrap.run"
+      ],
+      "evidence": "发布渠道经 publish.sh.j2 渲染成命令后执行"
+    },
+    {
+      "id": "C48",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "closure",
+      "source": "flask_arg",
+      "entry": "request.args['raw']",
+      "file": "services/ingest/pipeline.py",
+      "line": 19,
+      "path": [
+        "request.args['raw']",
+        "closure _inner",
+        "os.system"
+      ],
+      "evidence": "query 参数被闭包捕获后进 os.system"
+    },
+    {
+      "id": "C49",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "arglist_misuse",
+      "source": "flask_form",
+      "entry": "request.form['codec']",
+      "file": "services/ingest/pipeline.py",
+      "line": 27,
+      "path": [
+        "request.form['codec']",
+        "subprocess.run(argv)"
+      ],
+      "evidence": "编解码器名被当成 argv[0] 直接执行"
+    },
+    {
+      "id": "C50",
+      "sink": "command_injection",
+      "rule": "command_injection",
+      "variant": "shell_wrapper",
+      "source": "flask_arg",
+      "entry": "request.args['cmd']",
+      "file": "services/ingest/pipeline.py",
+      "line": 33,
+      "path": [
+        "request.args['cmd']",
+        "cmdutil.critical_run",
+        "subprocess.check_output(shell=True)"
+      ],
+      "evidence": "query 参数经 cmdutil.critical_run 进 check_output(shell=True)"
+    }
+  ]
+}
