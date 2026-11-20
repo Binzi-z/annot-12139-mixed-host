@@ -1,0 +1,1749 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "taint_sa",
+          "version": "1.0.0",
+          "informationUri": "https://example.invalid/taint_sa",
+          "rules": [
+            {
+              "id": "command_injection",
+              "name": "PythonCommandInjection",
+              "shortDescription": {
+                "text": "Python 命令注入（污点到 sink 可达）"
+              },
+              "fullDescription": {
+                "text": "基于自建 CFG 与污点状态的跨过程分析：Flask/Celery/环境变量 源经拼接、参数列表误用、shell 包装、模板渲染、闭包/实例属性 传播到达 subprocess/os.system/os.popen 等执行点。"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://cwe.mitre.org/data/definitions/78.html",
+              "messageStrings": {
+                "concat_shell": {
+                  "text": "外部输入经字符串拼接进入 shell=True 的命令执行"
+                },
+                "arglist_misuse": {
+                  "text": "外部输入成为 argv[0] 或 /bin/sh -c 的命令字符串"
+                },
+                "shell_wrapper": {
+                  "text": "外部输入经配置登记的 shell 包装函数进入 shell"
+                },
+                "template_rendered": {
+                  "text": "外部输入经模板渲染生成命令字符串后被执行"
+                },
+                "closure": {
+                  "text": "外部输入被闭包捕获后到达命令执行点"
+                },
+                "class_attr": {
+                  "text": "外部输入存入实例属性，稍后被 shell 执行"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/admin/console.py"
+                },
+                "region": {
+                  "startLine": 21,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.form 经 request.form[...] -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/admin/console.py"
+                },
+                "region": {
+                  "startLine": 27,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/admin/console.py"
+                },
+                "region": {
+                  "startLine": 34,
+                  "snippet": {
+                    "text": "subprocess.check_output"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/admin/console.py"
+                },
+                "region": {
+                  "startLine": 42,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/admin/console.py"
+                },
+                "region": {
+                  "startLine": 48,
+                  "snippet": {
+                    "text": "subprocess.check_output"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.json 经 request.json.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/admin/console.py"
+                },
+                "region": {
+                  "startLine": 55,
+                  "snippet": {
+                    "text": "subprocess.call"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.json"
+            ],
+            "taint_path": [
+              "request.json.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/admin/console.py"
+                },
+                "region": {
+                  "startLine": 62,
+                  "snippet": {
+                    "text": "subprocess.run"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 env.APP_MIGRATE_ARGS 经 os.environ.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/cli/entry.py"
+                },
+                "region": {
+                  "startLine": 16,
+                  "snippet": {
+                    "text": "os.popen"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "env.APP_MIGRATE_ARGS"
+            ],
+            "taint_path": [
+              "os.environ.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 env.APP_COLLECT_ARGS 经 os.environ.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/cli/entry.py"
+                },
+                "region": {
+                  "startLine": 22,
+                  "snippet": {
+                    "text": "os.popen"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "env.APP_COLLECT_ARGS"
+            ],
+            "taint_path": [
+              "os.environ.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 env.APP_SEED_TEMPLATE, env.APP_TARGET 经 os.getenv(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/cli/entry.py"
+                },
+                "region": {
+                  "startLine": 28,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "env.APP_SEED_TEMPLATE",
+              "env.APP_TARGET"
+            ],
+            "taint_path": [
+              "os.getenv(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 env.APP_PURGE_ARGS 经 os.environ.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/cli/entry.py"
+                },
+                "region": {
+                  "startLine": 34,
+                  "snippet": {
+                    "text": "os.popen"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "env.APP_PURGE_ARGS"
+            ],
+            "taint_path": [
+              "os.environ.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/diag.py"
+                },
+                "region": {
+                  "startLine": 25,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/diag.py"
+                },
+                "region": {
+                  "startLine": 33,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.form 经 request.form[...] -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/diag.py"
+                },
+                "region": {
+                  "startLine": 39,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/diag.py"
+                },
+                "region": {
+                  "startLine": 48,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.json 经 request.json.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/diag.py"
+                },
+                "region": {
+                  "startLine": 55,
+                  "snippet": {
+                    "text": "subprocess.call"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.json"
+            ],
+            "taint_path": [
+              "request.json.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.form 经 request.form[...] -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/diag.py"
+                },
+                "region": {
+                  "startLine": 61,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/diag.py"
+                },
+                "region": {
+                  "startLine": 69,
+                  "snippet": {
+                    "text": "subprocess.run"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/arglist_misuse] 污点源 flask.form 经 request.form[...] 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/diag.py"
+                },
+                "region": {
+                  "startLine": 75,
+                  "snippet": {
+                    "text": "subprocess argv[0] 可控"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "arglist_misuse",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/ops.py"
+                },
+                "region": {
+                  "startLine": 20,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/ops.py"
+                },
+                "region": {
+                  "startLine": 27,
+                  "snippet": {
+                    "text": "subprocess.run"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/ops.py"
+                },
+                "region": {
+                  "startLine": 34,
+                  "snippet": {
+                    "text": "subprocess.run"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/arglist_misuse] 污点源 flask.form 经 request.form[...] 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/ops.py"
+                },
+                "region": {
+                  "startLine": 40,
+                  "snippet": {
+                    "text": "subprocess argv[0] 可控"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "arglist_misuse",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/ops.py"
+                },
+                "region": {
+                  "startLine": 48,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.json 经 request.json.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/ops.py"
+                },
+                "region": {
+                  "startLine": 55,
+                  "snippet": {
+                    "text": "subprocess.call"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.json"
+            ],
+            "taint_path": [
+              "request.json.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/ops.py"
+                },
+                "region": {
+                  "startLine": 62,
+                  "snippet": {
+                    "text": "subprocess.run"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.form 经 request.form[...] -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/users.py"
+                },
+                "region": {
+                  "startLine": 20,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.json 经 request.json.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/users.py"
+                },
+                "region": {
+                  "startLine": 28,
+                  "snippet": {
+                    "text": "subprocess.call"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.json"
+            ],
+            "taint_path": [
+              "request.json.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/users.py"
+                },
+                "region": {
+                  "startLine": 34,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.form 经 request.form[...] -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/users.py"
+                },
+                "region": {
+                  "startLine": 42,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/gateway/users.py"
+                },
+                "region": {
+                  "startLine": 51,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 flask.args 经 request.args.get(...) 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/ingest/pipeline.py"
+                },
+                "region": {
+                  "startLine": 19,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/arglist_misuse] 污点源 flask.form 经 request.form[...] 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/ingest/pipeline.py"
+                },
+                "region": {
+                  "startLine": 27,
+                  "snippet": {
+                    "text": "subprocess argv[0] 可控"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "arglist_misuse",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/ingest/pipeline.py"
+                },
+                "region": {
+                  "startLine": 33,
+                  "snippet": {
+                    "text": "subprocess.check_output"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 celery.path 经 celery 任务参数 path -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_maintenance.py"
+                },
+                "region": {
+                  "startLine": 13,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "celery.path"
+            ],
+            "taint_path": [
+              "celery 任务参数 path",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/arglist_misuse] 污点源 celery.volume 经 celery 任务参数 volume -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_maintenance.py"
+                },
+                "region": {
+                  "startLine": 18,
+                  "snippet": {
+                    "text": "subprocess argv [\"/bin/sh\",\"-c\", ...]"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "arglist_misuse",
+            "sources": [
+              "celery.volume"
+            ],
+            "taint_path": [
+              "celery 任务参数 volume",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 celery.table 经 celery 任务参数 table -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_maintenance.py"
+                },
+                "region": {
+                  "startLine": 23,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "celery.table"
+            ],
+            "taint_path": [
+              "celery 任务参数 table",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 celery.index 经 celery 任务参数 index -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_maintenance.py"
+                },
+                "region": {
+                  "startLine": 28,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "celery.index"
+            ],
+            "taint_path": [
+              "celery 任务参数 index",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/arglist_misuse] 污点源 celery.shard 经 celery 任务参数 shard -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_maintenance.py"
+                },
+                "region": {
+                  "startLine": 33,
+                  "snippet": {
+                    "text": "subprocess argv [\"/bin/sh\",\"-c\", ...]"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "arglist_misuse",
+            "sources": [
+              "celery.shard"
+            ],
+            "taint_path": [
+              "celery 任务参数 shard",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 celery.volume 经 celery 任务参数 volume -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_maintenance.py"
+                },
+                "region": {
+                  "startLine": 38,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "celery.volume"
+            ],
+            "taint_path": [
+              "celery 任务参数 volume",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 celery.tenant 经 celery 任务参数 tenant -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_sync.py"
+                },
+                "region": {
+                  "startLine": 18,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "celery.tenant"
+            ],
+            "taint_path": [
+              "celery 任务参数 tenant",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 celery.remote 经 celery 任务参数 remote -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_sync.py"
+                },
+                "region": {
+                  "startLine": 23,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "celery.remote"
+            ],
+            "taint_path": [
+              "celery 任务参数 remote",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.form 经 request.form[...] 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_sync.py"
+                },
+                "region": {
+                  "startLine": 31,
+                  "snippet": {
+                    "text": "shellwrap.run_shell"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 celery.prefix 经 celery 任务参数 prefix -> concat 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_sync.py"
+                },
+                "region": {
+                  "startLine": 41,
+                  "snippet": {
+                    "text": "subprocess.run(shell=True)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "celery.prefix"
+            ],
+            "taint_path": [
+              "celery 任务参数 prefix",
+              "concat"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.form 经 request.form[...] 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/jobs/tasks_sync.py"
+                },
+                "region": {
+                  "startLine": 49,
+                  "snippet": {
+                    "text": "shellwrap.run_shell"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.form"
+            ],
+            "taint_path": [
+              "request.form[...]"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/reports/render.py"
+                },
+                "region": {
+                  "startLine": 19,
+                  "snippet": {
+                    "text": "subprocess.run"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 env.APP_REPORT_TEMPLATE, env.APP_TARGET 经 os.getenv(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/reports/render.py"
+                },
+                "region": {
+                  "startLine": 25,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "env.APP_REPORT_TEMPLATE",
+              "env.APP_TARGET"
+            ],
+            "taint_path": [
+              "os.getenv(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/reports/render.py"
+                },
+                "region": {
+                  "startLine": 32,
+                  "snippet": {
+                    "text": "subprocess.run"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/concat_shell] 污点源 env.APP_ARCHIVE_TEMPLATE, env.APP_TARGET 经 os.getenv(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/reports/render.py"
+                },
+                "region": {
+                  "startLine": 38,
+                  "snippet": {
+                    "text": "os.system"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "concat_shell",
+            "sources": [
+              "env.APP_ARCHIVE_TEMPLATE",
+              "env.APP_TARGET"
+            ],
+            "taint_path": [
+              "os.getenv(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        },
+        {
+          "ruleId": "command_injection",
+          "level": "error",
+          "message": {
+            "text": "[command_injection/shell_wrapper] 污点源 flask.args 经 request.args.get(...) -> template.render 到达命令执行点"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "services/reports/render.py"
+                },
+                "region": {
+                  "startLine": 45,
+                  "snippet": {
+                    "text": "subprocess.run"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "variant": "shell_wrapper",
+            "sources": [
+              "flask.args"
+            ],
+            "taint_path": [
+              "request.args.get(...)",
+              "template.render"
+            ],
+            "security-severity": "8.8",
+            "cwe": "CWE-78"
+          }
+        }
+      ]
+    }
+  ]
+}

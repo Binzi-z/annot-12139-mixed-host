@@ -1,0 +1,35 @@
+name: taint-sa
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  command-injection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 污点分析（增量，全量兜底）
+        run: |
+          if [ -f .taint_cache.json ]; then
+            python -I analyze.py incremental --root . \
+              --config config/sanitizers.json --cache .taint_cache.json \
+              --sarif .ci/current.sarif
+          else
+            python -I analyze.py scan --root . \
+              --config config/sanitizers.json --cache .taint_cache.json \
+              --sarif .ci/current.sarif
+          fi
+      - name: 上传 SARIF（代码扫描面板）
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: .ci/current.sarif
+      - name: 新增违规门禁（红灯）
+        run: python -I analyze.py gate --root . \
+          --baseline .ci/baseline.sarif --sarif .ci/current.sarif
+      - name: 指标回归测试
+        run: python -I -m pytest tests -q

@@ -89,6 +89,24 @@ python -m pytest tests -q
 `eval.py` 同时接受 `findings.json` 与 SARIF 2.1.0。
 运行时依赖（flask/celery）**不需要安装**：本题只做静态分析，`ast` 解析不需要 import 执行。
 
+## 新分析器 taint_sa（ast + 自建 CFG/污点状态，无规则引擎）
+
+```bash
+# 全量（SARIF + findings.json + 增量缓存）
+python -I analyze.py scan --root . --config config/sanitizers.json \
+    --sarif out.sarif --json out.json --cache .taint_cache.json
+# 增量（--verify 会再跑全量做一致性自检，不一致退出码 3）
+python -I analyze.py incremental --root . --config config/sanitizers.json \
+    --cache .taint_cache.json --sarif inc.sarif --verify
+# CI 门禁：只拦截基线之外的新增违规
+python -I analyze.py gate --baseline .ci/baseline.sarif --sarif inc.sarif
+```
+
+实测（397 模块 / 197,523 行）：全量 ~13–16s、增量 ~6–10s；50 条样本
+**召回 100%、误报 0%**（`eval.py` 口径），全量/增量 finding 集合一致。
+设计与「跨过程截断策略」见 [`taint_sa/DESIGN.md`](taint_sa/DESIGN.md)，
+CI 接线见 `.github/workflows/taint-sa.yml` 与 `.ci/run_ci.sh`。
+
 ## 评测口径（eval.py）
 
 - 静态类标注（只有 file/line）：文件相同且行号差 ≤2（允许报在拼接行或调用行）。

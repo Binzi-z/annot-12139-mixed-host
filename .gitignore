@@ -5,4 +5,7 @@ findings.json
 o.json
 report.json
 *.sarif
+!.ci/baseline.sarif
+.taint_cache*.json
+*_dbg.json
 .venv/
